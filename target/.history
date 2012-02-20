@@ -1,3 +1,9 @@
 compile
 eclipsify
 exit
+compile
+run
+compile
+run
+compile
+run

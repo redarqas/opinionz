@@ -21,10 +21,19 @@ object Opinions extends Controller {
         criterion => Some(criterion.text)
       }
    )
-   
-   def index = {
-      Ok(views.html.index("Your new application is ready."))
-     //Ok(views.html.opinions.form(opinionForm))
+
+   def index = Action { implicit request => 
+     Ok(views.html.opinions.form("Ask me ! ", opinionForm))
    }
-   
+
+   def eval = Action {  implicit request => 
+     opinionForm.bindFromRequest.fold(
+      errors =>  Ok(views.html.opinions.form("Ask me ! ", errors)),
+      // We got a valid User value, display the summary
+      criterion => {
+         val opinion = services.Sentiment.getSentiment(criterion.text)
+         Ok(views.html.opinions.opinion(opinion))
+       }
+     )
+   }
 }
