@@ -4,3 +4,9 @@ Listening for HTTP on port 9000...
 2012-02-20 12:17:56,741 - [INFO] - from play in play-akka.actor.default-dispatcher-3 
 Application started (Dev)
 
+2012-02-20 13:13:19,904 - [INFO] - from play in play-akka.actor.default-dispatcher-6 
+Application started (Dev)
+
+2012-02-20 13:14:55,350 - [INFO] - from play in play-akka.actor.default-dispatcher-9 
+Application started (Dev)
+

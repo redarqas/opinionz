@@ -1,6 +1,6 @@
 // @SOURCE:/Users/jch/hackday/github/opinionz/conf/routes
-// @HASH:506c93bfaacc37422a23c1c13bb7e03704080978
-// @DATE:Mon Feb 20 12:02:34 CET 2012
+// @HASH:c3efbf513045b5205a2c17aa18acde186992abf1
+// @DATE:Mon Feb 20 13:13:18 CET 2012
 
 import play.core._
 import play.core.Router._
@@ -32,7 +32,7 @@ def index() = {
  
 // @LINE:7
 def eval() = {
-   Call("POST", "/")
+   Call("POST", "/result")
 }
                                                         
 
@@ -89,7 +89,7 @@ def eval = JavascriptReverseRoute(
    "controllers.Opinions.eval",
    """
       function() {
-      return _wA({method:"POST", url:"/"})
+      return _wA({method:"POST", url:"/result"})
       }
    """
 )

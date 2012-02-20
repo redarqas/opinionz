@@ -1,6 +1,6 @@
 // @SOURCE:/Users/jch/hackday/github/opinionz/conf/routes
-// @HASH:506c93bfaacc37422a23c1c13bb7e03704080978
-// @DATE:Mon Feb 20 12:02:34 CET 2012
+// @HASH:c3efbf513045b5205a2c17aa18acde186992abf1
+// @DATE:Mon Feb 20 13:13:18 CET 2012
 
 import play.core._
 import play.core.Router._
@@ -19,13 +19,13 @@ val controllers_Opinions_index0 = Route("GET", PathPattern(List(StaticPart("/"))
                     
 
 // @LINE:7
-val controllers_Opinions_eval1 = Route("POST", PathPattern(List(StaticPart("/"))))
+val controllers_Opinions_eval1 = Route("POST", PathPattern(List(StaticPart("/result"))))
                     
 
 // @LINE:10
 val controllers_Assets_at2 = Route("GET", PathPattern(List(StaticPart("/assets/"),DynamicPart("file", """.+"""))))
                     
-def documentation = List(("""GET""","""/""","""controllers.Opinions.index"""),("""POST""","""/""","""controllers.Opinions.eval"""),("""GET""","""/assets/$file<.+>""","""controllers.Assets.at(path:String = "/public", file:String)"""))
+def documentation = List(("""GET""","""/""","""controllers.Opinions.index"""),("""POST""","""/result""","""controllers.Opinions.eval"""),("""GET""","""/assets/$file<.+>""","""controllers.Assets.at(path:String = "/public", file:String)"""))
              
     
 def routes:PartialFunction[RequestHeader,Handler] = {        
