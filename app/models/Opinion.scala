@@ -16,7 +16,7 @@ case class Opinion(text: String, mood: String, prob: Double, date:Date = new Dat
 
 //case class Tweet(message:String, source:String, hashs:List[String])
 
-object Opinion extends SalatDAO[Opinion, ObjectId](collection = MongoPlugin.collection("training")) {
+object Opinion extends SalatDAO[Opinion, ObjectId](collection = MongoPlugin.collection("opinions")) {
 
 }
 
