@@ -46,8 +46,8 @@ Seq(format.raw/*1.32*/("""
 }
                 /*
                     -- GENERATED --
-                    DATE: Sun Feb 19 21:53:18 CET 2012
-                    SOURCE: /Users/jch/hackday/github/opinionz/app/views/main.scala.html
+                    DATE: Tue Feb 21 22:04:43 CET 2012
+                    SOURCE: /Users/alabbe/Dev/zenexity_workspace/hackdays/opinionz/app/views/main.scala.html
                     HASH: 6a9d3e71a4db67b23442aa0e15837c7026dc07bb
                     MATRIX: 509->1|611->31|694->84|720->89|812->151|826->157|881->191|972->252|986->258|1039->290|1095->315|1110->321|1177->366|1275->433|1304->440
                     LINES: 19->1|22->1|28->7|28->7|29->8|29->8|29->8|30->9|30->9|30->9|31->10|31->10|31->10|34->13|34->13

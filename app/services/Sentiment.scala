@@ -2,6 +2,7 @@ package services
 
 import models.OpinionFormat
 import play.api.libs.ws.WS
+import play.api.libs.json.Json._
 
 object Sentiment {
   /**
@@ -10,7 +11,7 @@ object Sentiment {
   def getSentiment(text: String) = {
     WS.url(sentimentUrl).withQueryString(("api_key", key), ("text", text))
       .get()
-      .map { response => play.api.libs.json.Json.fromJson(response.json)(OpinionFormat) }
+      .map { response => fromJson(response.json)(OpinionFormat) }
       .value.get
   }
   /**

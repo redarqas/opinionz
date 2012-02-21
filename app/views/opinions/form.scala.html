@@ -1,4 +1,4 @@
-@(message: String, opinionForm: Form[Criterion])
+@(message: String, opinionForm: Form[String])
 
 @import helper._
 
@@ -14,9 +14,8 @@
          )
      </fieldset>
      <div class="actions">
-        <input type="submit" class="btn primary" value="Eval">
+         <input type="submit" class="btn primary" value="Eval">
          <a href="@routes.Opinions.index" class="btn">Cancel</a>
-      </div>
+     </div>
    }
-    
 }

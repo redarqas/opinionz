@@ -22,11 +22,11 @@ object opinion extends BaseScalaTemplate[play.api.templates.Html,Format[play.api
 Seq(format.raw/*1.20*/("""
 
 """),_display_(Seq(/*3.2*/main("Welcome to Play 2.0")/*3.29*/ {_display_(Seq(format.raw/*3.31*/("""
-  <u>
+  <ul>
     <li>"""),_display_(Seq(/*5.10*/opinion/*5.17*/.text)),format.raw/*5.22*/("""</li>
     <li>"""),_display_(Seq(/*6.10*/opinion/*6.17*/.mood)),format.raw/*6.22*/("""</li>
     <li>"""),_display_(Seq(/*7.10*/opinion/*7.17*/.prob)),format.raw/*7.22*/("""</li>
-  </u>
+  </ul>
 """)))})))}
     }
     
@@ -39,10 +39,10 @@ Seq(format.raw/*1.20*/("""
 }
                 /*
                     -- GENERATED --
-                    DATE: Mon Feb 20 13:14:54 CET 2012
-                    SOURCE: /Users/jch/hackday/github/opinionz/app/views/opinions/opinion.scala.html
-                    HASH: 6920772544901316f91a0836b696a8432dd3148b
-                    MATRIX: 517->1|607->19|639->22|674->49|708->51|754->67|769->74|795->79|840->94|855->101|881->106|926->121|941->128|967->133
+                    DATE: Tue Feb 21 21:47:53 CET 2012
+                    SOURCE: /Users/alabbe/Dev/zenexity_workspace/hackdays/opinionz/app/views/opinions/opinion.scala.html
+                    HASH: 45bb16cdaeea49f05bab83471e69d614c588d111
+                    MATRIX: 517->1|607->19|639->22|674->49|708->51|755->68|770->75|796->80|841->95|856->102|882->107|927->122|942->129|968->134
                     LINES: 19->1|22->1|24->3|24->3|24->3|26->5|26->5|26->5|27->6|27->6|27->6|28->7|28->7|28->7
                     -- GENERATED --
                 */

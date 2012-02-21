@@ -5,27 +5,16 @@ import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import models._
+import views._
 
-
-import models.Criterion
 
 object Application extends Controller {
-  
-  val opinionForm: Form[Criterion] = Form(
-      mapping(
-        "text" -> text
-      ) {
-        (text) => Criterion(text)
-      }
-      {
-        criterion => Some(criterion.text)
-      }
-   )
-  
-   
-   
-  def index = Action {
-    Ok(views.html.index("Your new application is ready.", opinionForm))
-  }
-  
+   def index = Security.Authenticated(
+      request => request.session.get("token"),
+      _ => Redirect(routes.Twitter.authenticate()))(username => Opinions.index)
+
+   def logout = Action { request =>
+      Redirect(routes.Application.index()).withNewSession
+   }
+
 }
