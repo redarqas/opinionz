@@ -28,6 +28,7 @@ class StreamRecorder extends Actor {
                .sign(OAuthCalculator(Twitter.KEY, token))
             .get()
                .map(r => {
+                  Logger.debug(r.body)
                   val json = r.json
 
                })
