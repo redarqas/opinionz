@@ -17,7 +17,10 @@ import play.libs.Akka
 import models._
 import controllers.Twitter
 import akka.pattern.ask
-
+import play.api.libs.json._
+import play.api.libs.json.Json._
+import models.Tweet
+import models.Tweet._
 
 
 class StreamRecorder extends Actor {
@@ -27,16 +30,21 @@ class StreamRecorder extends Actor {
    def receive = {
       case StartRecording(token, term) => {
 
-         WS.url("https://stream.twitter.com/1/statuses/filter.json")
+        val sendToActor = Iteratee.foreach[List[Tweet]]( list => OpinionFinder.ref ! Find(list:_*) )
+        val arrayToTweet: Enumeratee[Array[Byte], List[Tweet]] = Enumeratee.map[Array[Byte]]( arr => {
+          val res = new String(arr)
+          Json.parse(res) match {
+            case l: JsArray => l.asOpt[List[Tweet]].getOrElse(Nil)
+            case o: JsObject => fromJson(o) :: Nil
+          }
+        })
+        val wsIteratee = arrayToTweet.transform(sendToActor)
+        
+        WS.url("https://stream.twitter.com/1/statuses/filter.json")
                .withQueryString("track" -> term)
                .sign(OAuthCalculator(Twitter.KEY, token))
-            .get()
-               .map(r => {
-                  Logger.debug(r.body)
-                  val json = r.json
-
-               })
-
+               .get(_ => wsIteratee)
+               
               //OpinionFinder.ref ? Find(tweet)
               // ajouter l'opinion dans le tweet du profil qu'on était en train d'enregister.
       }
