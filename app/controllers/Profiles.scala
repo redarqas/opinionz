@@ -41,14 +41,15 @@ object Profiles extends Controller {
      profileFrom.bindFromRequest.fold(
          errors => Ok(""),
          profile => AsyncResult {
-           Profile.insert(profile)
+           //Profile.insert(profile)
            //TODO : redirect to streming page
            val tokens = Twitter.sessionTokenPair(request).get
-           WS.url("https://stream.twitter.com/1/statuses/filter.json?track=" + profile.expression)
-           .sign(OAuthCalculator(Twitter.KEY, tokens))
+           WS.url("https://stream.twitter.com/1/statuses/filter.json")
+             .withQueryString("track" -> profile.expression)
+             .sign(OAuthCalculator(Twitter.KEY, tokens))
            .get.map(r => {
-              Logger.debug(r.json.toString)
-              Ok(r.json)
+              Logger.debug(r.body)
+              Ok(r.body)
            })
          }
      )
