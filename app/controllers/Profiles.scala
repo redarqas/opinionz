@@ -31,14 +31,17 @@ class Profiles extends Controller {
    def create = Action { implicit request => 
      profileFrom.bindFromRequest.fold(
          errors => Ok(""),
-         profile => {
-           //Profile.insert(profile)
+         profile => AsyncResult {
+           Profile.insert(profile)
+
            //TODO : redirect to streming page
-           val tokens = Twitter.sessionTokenPair(request).get
+            val tokens = Twitter.sessionTokenPair(request).get
            WS.url("https://stream.twitter.com/1/statuses/filter.json?track=" + profile.expression)
            .sign(OAuthCalculator(Twitter.KEY, tokens))
-           .get.value
-           //Ok("")
+           .get.map(r => {
+              Logger.debug(r.json.toString)
+              Ok(r.json)
+           })
          }
      )
    }

@@ -3,6 +3,7 @@ package services
 import models._
 import play.api.libs.ws.WS
 import play.api.libs.json.Json._
+import models.Opinion._
 
 object Sentiment {
   /**
@@ -11,7 +12,7 @@ object Sentiment {
   def getSentiment(text: String) = {
     WS.url(sentimentUrl).withQueryString(("api_key", key), ("text", text))
       .get()
-      .map { response => fromJson(response.json)(OpinionFormat) }
+      .map { response => fromJson(response.json) }
       .value.get
   }
   /**
@@ -35,12 +36,11 @@ object Sentiment {
   
   def startProfile(profile : Profile) {
     Profile.insert(profile)
-    
   }
   
-  def startTracking(term: String) {
+  /*def startTracking(term: String) {
     WS.url("https://stream.twitter.com/1/statuses/filter.json?track=" + term)
       .sign("")
     
-  }
+  }*/
 }
