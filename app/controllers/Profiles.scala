@@ -16,6 +16,8 @@ import play.api.libs._
 import play.api.libs.ws._
 import play.api.libs.oauth.OAuthCalculator
 import play.Logger
+import actors.StreamRecorder
+import actors.StreamRecorder._
 
 
 object Profiles extends Controller {
@@ -24,7 +26,7 @@ object Profiles extends Controller {
    /** ============================ **/
    val profileFrom: Form[Profile] =  Form(
        mapping(
-         "expression" -> text 
+         "text" -> text
        ) {
          expression => Profile(expression, Nil)
        } {
@@ -39,24 +41,34 @@ object Profiles extends Controller {
    //Create a profile and start streaming
    def create = Action { implicit request => 
      profileFrom.bindFromRequest.fold(
-         errors => Ok(""),
-         profile => AsyncResult {
-           //Profile.insert(profile)
-           //TODO : redirect to streming page
+         errors => {
+            Ok(views.html.profiles.form("Ask me ! ", errors))
+         },
+         profile =>  {
+
+           Profile.insert(profile)
+           val tokens = Twitter.sessionTokenPair(request).get
+
+           StreamRecorder.ref ! StartRecording(tokens, profile.expression)
+
+           Ok("Now recording" + profile.expression)
+
+           /*//TODO : redirect to streming page
            val tokens = Twitter.sessionTokenPair(request).get
            WS.url("https://stream.twitter.com/1/statuses/filter.json")
              .withQueryString("track" -> profile.expression)
              .sign(OAuthCalculator(Twitter.KEY, tokens))
            .get.map(r => {
+              println("test "+r.body)
               Logger.debug(r.body)
               Ok(r.body)
-           })
+           })*/
          }
      )
    }
    
    //Display form to create profile
-   def index = Action { implicit request => 
+   def index = Action { implicit request =>
      Ok(views.html.profiles.form("Ask me ! ", profileFrom))
    }
 
