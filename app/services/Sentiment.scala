@@ -1,6 +1,6 @@
 package services
 
-import models.OpinionFormat
+import models._
 import play.api.libs.ws.WS
 import play.api.libs.json.Json._
 
@@ -32,5 +32,15 @@ object Sentiment {
       .map { response => (response.json \ "quota_remaining").as[Long] }
       .value.get;
   }
-
+  
+  def startProfile(profile : Profile) {
+    Profile.insert(profile)
+    
+  }
+  
+  def startTracking(term: String) {
+    WS.url("https://stream.twitter.com/1/statuses/filter.json?track=" + term)
+      .sign("")
+    
+  }
 }
