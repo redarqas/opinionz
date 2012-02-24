@@ -1,7 +1,21 @@
-@(message:String = "", form:Form[Profile])
+@(message: String, profileFrom: Form[Profile])
+
+@import helper._
 
 @main("Welcome to Play 2.0") {
     
-    @play20.welcome(message)
-    
+   @helper.form(action = routes.Profiles.create) {
+     <fieldset>
+         <legend>Opinion Finder</legend>
+         @inputText(
+                profileFrom("expression"), 
+                '_label -> "Your sentence", 
+                '_error -> profileFrom.globalError
+         )
+     </fieldset>
+     <div class="actions">
+         <input type="submit" class="btn primary" value="Eval">
+         <a href="@routes.Profiles.index" class="btn">Cancel</a>
+     </div>
+   }
 }

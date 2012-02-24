@@ -9,7 +9,7 @@ import views._
 import play.api.libs.ws._
 import play.api.libs.oauth.OAuthCalculator
 
-class Profiles extends Controller {
+object Profiles extends Controller {
    /** ============================ **/
    /** Form definition              **/
    /** ============================ **/
@@ -33,9 +33,8 @@ class Profiles extends Controller {
          errors => Ok(""),
          profile => AsyncResult {
            Profile.insert(profile)
-
            //TODO : redirect to streming page
-            val tokens = Twitter.sessionTokenPair(request).get
+           val tokens = Twitter.sessionTokenPair(request).get
            WS.url("https://stream.twitter.com/1/statuses/filter.json?track=" + profile.expression)
            .sign(OAuthCalculator(Twitter.KEY, tokens))
            .get.map(r => {
