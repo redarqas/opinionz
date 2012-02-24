@@ -15,7 +15,7 @@ import play.api.Play.current
 /**
  * Case class for Profile document
  */
-case class Profile(expression: String, tweets: List[Tweet]) {}
+case class Profile(expression: String, tweets: List[Tweet] = Nil) {}
 /**
  * JSON formatter
  */
