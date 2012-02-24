@@ -6,6 +6,7 @@ import akka.actor._
 import play.libs.Akka
 import models.Tweet
 import services.Sentiment
+import actors.ProfileWorker.NewOpinion
 
 
 class OpinionFinder extends Actor {
@@ -15,7 +16,8 @@ class OpinionFinder extends Actor {
       case Find(tweet) => {
 
          val o = Sentiment.getSentiment(tweet.text)
-         ProfileWorker.ref ! o
+
+         ProfileWorker.ref ! NewOpinion(o)
 
 
       }

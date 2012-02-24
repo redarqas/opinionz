@@ -16,8 +16,17 @@ import play.api.libs._
 import play.api.libs.ws._
 import play.api.libs.oauth.OAuthCalculator
 import play.Logger
-import actors.StreamRecorder
 import actors.StreamRecorder._
+import akka.util.Timeout
+import actors.{ProfileWorker, StreamRecorder}
+import akka.util.duration._
+import akka.util.Timeout
+import play.api.libs.json._
+import play.api.libs.json.Json._
+import akka.pattern.ask
+import play.api.libs.iteratee._
+import play.api.libs.concurrent._
+import play.api.libs.Comet
 
 
 object Profiles extends Controller {
@@ -53,16 +62,6 @@ object Profiles extends Controller {
 
            Ok("Now recording" + profile.expression)
 
-           /*//TODO : redirect to streming page
-           val tokens = Twitter.sessionTokenPair(request).get
-           WS.url("https://stream.twitter.com/1/statuses/filter.json")
-             .withQueryString("track" -> profile.expression)
-             .sign(OAuthCalculator(Twitter.KEY, tokens))
-           .get.map(r => {
-              println("test "+r.body)
-              Logger.debug(r.body)
-              Ok(r.body)
-           })*/
          }
      )
    }
@@ -72,17 +71,22 @@ object Profiles extends Controller {
      Ok(views.html.profiles.form("Ask me ! ", profileFrom))
    }
 
-   /*val bytesToString: Enumeratee[Array[Byte],String] = Enumeratee.map[Array[Byte]]{ byteArray => new String(byteArray)}
 
-   def twitter(term: String) = Action { request =>
-      val tokens = Twitter.sessionTokenPair(request).get
-      val toComet = bytesToString ><> Comet(callback = "window.parent.twitts")(Comet.CometMessage(identity))
+   val cometEnumeratee = Comet(callback = "window.parent.signIt")(Comet.CometMessage[Opinion](signer => {
+      Logger.debug("converting to json")
+      toJson(signer).toString
+   }))
 
-      Ok.stream { socket: Socket.Out[play.api.templates.Html] =>
-         WS.url("https://stream.twitter.com/1/statuses/filter.json?track=" + term)
-               .sign(OAuthCalculator(Twitter.KEY, tokens))
-               .get(res => toComet &> socket)
+   def stream = Action {
+      import ProfileWorker._
+      AsyncResult {
+		implicit val timeout = Timeout(1 second)
+         (ProfileWorker.ref ? Listen()).mapTo[Enumerator[Opinion]].asPromise.map {
+			chunks => {
+               Logger.debug("un chunk")
+               Ok.stream(chunks &> cometEnumeratee)
+            }
+         }
       }
-   }*/
-
+   }
 }

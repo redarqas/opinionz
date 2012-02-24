@@ -16,13 +16,17 @@ import play.api.Play.current
 import play.libs.Akka
 import models._
 import controllers.Twitter
+import akka.pattern.ask
+
 
 
 class StreamRecorder extends Actor {
    import StreamRecorder._
+   import OpinionFinder._
 
    def receive = {
       case StartRecording(token, term) => {
+
          WS.url("https://stream.twitter.com/1/statuses/filter.json")
                .withQueryString("track" -> term)
                .sign(OAuthCalculator(Twitter.KEY, token))
@@ -33,8 +37,8 @@ class StreamRecorder extends Actor {
 
                })
 
-
-
+              //OpinionFinder.ref ? Find(tweet)
+              // ajouter l'opinion dans le tweet du profil qu'on était en train d'enregister.
       }
          
          
