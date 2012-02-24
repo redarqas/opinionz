@@ -77,11 +77,11 @@ object Profiles extends Controller {
       toJson(signer).toString
    }))
 
-   def stream = Action {
+   def stream(term:String) = Action {
       import ProfileWorker._
       AsyncResult {
 		implicit val timeout = Timeout(1 second)
-         (ProfileWorker.ref ? Listen()).mapTo[Enumerator[Opinion]].asPromise.map {
+         (ProfileWorker.ref ? Listen(term)).mapTo[Enumerator[Opinion]].asPromise.map {
 			chunks => {
                Logger.debug("un chunk")
                Ok.stream(chunks &> cometEnumeratee)
