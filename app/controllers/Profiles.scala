@@ -58,13 +58,14 @@ object Profiles extends Controller {
         val tokens = Twitter.sessionTokenPair(request).get
         //Launch Tweets recorder
         StreamRecorder.ref ! StartRecording(tokens, profile.expression)
-        Ok("Now recording : " + profile.expression)
+        Ok(views.html.profiles.stream("Now recording : " , profile))
+        //Redirect(Profiles.stream(profile.expression)).withSession("token" -> t.token, "secret" -> t.secret)
       })
+      
   }
 
   /** ====== Define stream results  ====== **/
-  val cometEnumeratee = Comet(callback = "window.parent.signIt")(Comet.CometMessage[Opinion](signer => {
-    Logger.debug("converting to json")
+  val cometEnumeratee = Comet(callback = "window.parent.streamit")(Comet.CometMessage[Tweet](signer => {
     toJson(signer).toString
   }))
 
@@ -72,10 +73,9 @@ object Profiles extends Controller {
     import ProfileWorker._
     AsyncResult {
       implicit val timeout = Timeout(1 second)
-      (ProfileWorker.ref ? Listen(term)).mapTo[Enumerator[Opinion]].asPromise.map {
+      (ProfileWorker.ref ? Listen(term)).mapTo[Enumerator[Tweet]].asPromise.map {
         chunks =>
           {
-            Logger.debug("un chunk")
             Ok.stream(chunks &> cometEnumeratee)
           }
       }

@@ -1,0 +1,32 @@
+@(message: String, profile: Profile)
+
+@import helper._
+
+
+@main("Welcome to Play 2.0") {
+    
+<iframe style="display:none" id="streaming"></iframe>
+
+<div class="span8" id="twitts"></div>
+
+<script id="twitt_tpl" type="text/template">
+<div>
+    <div><%= opinion.mood %>  <%= opinion.prob %> : <%= opinion.text %></div>
+</div>
+</script>
+
+<script type="text/javascript">
+var $twitts = $("#twitts");
+var twittTpl = _.template($("#twitt_tpl").html());  
+
+function streamit(data) {
+    $twitts.prepend(twittTpl(data));
+    console.log(data);
+ }
+
+$(function(){
+  $("#streaming").attr("src", "/stream/" + "@profile.expression");
+});
+</script>    
+    
+}

@@ -24,7 +24,7 @@ class ProfileWorker extends Actor {
             pushee => self ! Init(pushee, term),
             onComplete = self ! Quit()
          )
-         Logger.info("New opinion stream on")
+         //Logger.info("New opinion stream on")
          sender ! channel
       }
       case Init(pushee,term) => {
@@ -32,12 +32,14 @@ class ProfileWorker extends Actor {
       }
 
       case Quit() => {
-         Logger.info("Opinion stream stopped ...")
+         //Logger.info("Opinion stream stopped ...")
       }
 
       case NewTweets(term, tweets @ _*) => {
-         Logger.info("New opinion : " + tweets.toString)
-         listeners.filter(_._1 == term).foreach(p => tweets.foreach( t => p._2.push(t)))
+         //Logger.info("New opinion : " + tweets.toString)
+         listeners.filter(_._1 == term).foreach(p => tweets.foreach( t => {
+           println("Result tweet ::==================== "+ t.opinion)
+           p._2.push(t)}))
       }
       case _ => {
          Logger.info("error matching actor message")

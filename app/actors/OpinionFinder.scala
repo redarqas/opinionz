@@ -19,11 +19,11 @@ class OpinionFinder extends Actor {
       case Find(term, tweet @ _*) => {
          val tweets = tweet.foldLeft(List[Tweet]())( (r,t) => {
             val o = Sentiment.getSentiment(t.text)
-            println("******* Opinion ********* : " + o.toString())
             val betterTweet = t.copy(opinion = o)
-            r :+ t
+            r :+ betterTweet
          })
          ProfileWorker.ref ! NewTweets(term, tweets:_*)
+
          Profile.findOne(MongoDBObject("expression" -> term)).map{ p =>
             Profile.save(p.copy(tweets = p.tweets ++ tweets))
          }
