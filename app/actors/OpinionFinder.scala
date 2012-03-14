@@ -19,6 +19,7 @@ class OpinionFinder extends Actor {
       case Find(term, tweet @ _*) => {
          val tweets = tweet.foldLeft(List[Tweet]())( (r,t) => {
             val o = Sentiment.getSentiment(t.text)
+            println("******* Opinion ********* : " + o.toString())
             val betterTweet = t.copy(opinion = o)
             r :+ t
          })
