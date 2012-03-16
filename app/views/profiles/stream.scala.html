@@ -5,28 +5,79 @@
 
 @main("Welcome to Play 2.0") {
     
+    
+    <div id="header"> 
+    <img class="logo" src="@routes.Assets.at("images/opinionz.png")"></img>
+    </div>
+    <div id="content">      
 <iframe style="display:none" id="streaming"></iframe>
 
-<div class="span8" id="twitts"></div>
-
-<script id="twitt_tpl" type="text/template">
-<div>
-    <div><%= opinion.mood %>  <%= opinion.prob %> : <%= opinion.text %></div>
+<div id="holder"></div>
 </div>
-</script>
+
 
 <script type="text/javascript">
-var $twitts = $("#twitts");
-var twittTpl = _.template($("#twitt_tpl").html());  
+
+var chart = new Chart(document.getElementById('holder'), 800, 600);
+chart.axis();
+
+var trust = 0.7;
+var interval = 3000;
+
+var i = 0;
+
+
+var positive = [];
+var negative = [];
+var neutral = [];
+
 
 function streamit(data) {
-    $twitts.prepend(twittTpl(data));
-    console.log(data);
+
+	if (data.opinion.prob < trust) {
+		neutral.push(data);
+	} else if (data.opinion.mood == 'positive') {
+    	positive.push(data);
+    } else {
+    	negative.push(data);
+    }
  }
+
+function norm(array) {
+	var sum = positive.length + negative.length + neutral.length;
+	if (sum == 0) {
+		return 0;
+	}
+	return (array.length / sum)*100;
+}
+
+function reset() {
+	positive = [];
+	negative = [];
+	neutral = [];
+}
+
+
+$(function paintLoop(){
+  
+	setTimeout(function () {
+
+		var ne = norm(neutral);
+		var p = norm(positive);
+		var ng = norm(negative);
+		chart.bar(i, ne, p, ng, neutral.length, positive.length, negative.length);
+		
+		reset();
+		i++;
+
+		paintLoop();
+	}, interval);
+});
+
 
 $(function(){
   $("#streaming").attr("src", "/stream/" + "@profile.expression");
 });
-</script>    
-    
+</script>
+
 }
