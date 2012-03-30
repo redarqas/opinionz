@@ -20,6 +20,8 @@ import play.api.libs.json._
 import play.api.libs.json.Json._
 import models.Tweet
 import models.Tweet._
+import play.modules.mongodb.MongoJson
+import com.mongodb.DBObject
 
 class StreamRecorder extends Actor {
   import StreamRecorder._
@@ -36,14 +38,21 @@ class StreamRecorder extends Actor {
       val arrayToTweet: Enumeratee[Array[Byte], List[Tweet]] = Enumeratee.map[Array[Byte]](arr => {
         val res = new String(arr)
         Logger.debug(" --> New chunk")
-        Json.parse(res) match {
-          case l: JsArray => {
-             l.asOpt[List[Tweet]].getOrElse(Nil)
-          }
-          case o: JsObject => {
-             List(fromJson(o))
-          }
-        }
+        val o: JsValue = Json.parse(res)
+        val t: Tweet = fromJson(o)
+        Logger.debug("Deserialized tweet:"+t)
+        List(t)
+         /*try {
+            val json: DBObject = MongoJson.fromJson(JsObject(Seq("test"-> JsString("bordel"))))
+            Logger.debug(" Mongoplugin json:"+json.toString)
+            List(t.copy(json = Some(json)))
+         } catch {
+            case e => {
+               Logger.debug(e.getMessage)
+               throw new RuntimeException("Error occurred",e)
+            }
+         }*/
+
       })
       //Iteratee to manage tweets stream
       val wsIteratee = arrayToTweet.transform(sendToOpinionFinder)

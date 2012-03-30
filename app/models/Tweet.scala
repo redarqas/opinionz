@@ -12,7 +12,7 @@ import play.api.libs.json.JsArray
 import play.api.Play.current
 
 //TODO : add properties
-case class Tweet(profileId:Option[ObjectId], text: String, opinion: Option[Opinion] = None) {}
+case class Tweet(profileId:Option[ObjectId], text: String, opinion: Option[Opinion] = None, json: Option[DBObject] = None) {}
 
 object Tweet extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collection("tweet")) {
 
@@ -20,7 +20,7 @@ object Tweet extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collecti
     def reads(json: JsValue): Tweet = Tweet(
       None,
       (json \ "text").as[String],
-      (json \ "opinion").asOpt[Opinion]
+      None
     )
     def writes(tweet: Tweet): JsObject = JsObject(Seq(
       "profileId" -> JsString(tweet.profileId.toString),
