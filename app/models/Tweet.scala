@@ -6,10 +6,13 @@ import com.novus.salat.annotations._
 import com.novus.salat.dao._
 import com.mongodb.casbah.Imports._
 import play.modules.mongodb._
+import com.novus.salat.dao._
+import com.mongodb.casbah.Imports._
+import play.modules.mongodb._
 import play.api.libs.json._
 import play.api.libs.json.Json._
-import play.api.libs.json.JsArray
 import play.api.Play.current
+import play.Logger
 
 case class HashTag(text: Option[String])
 
@@ -96,5 +99,57 @@ object Tweet extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collecti
       "entities" -> toJson(tweet.entities)))
 
   }
-}
 
+  def incMapReduce(profile:Profile) = {
+     Logger.debug("New MapReduce Operation")
+     val MERGE_COLLECTION: String = "globalStatistics"
+
+     val maybeLastIncrement = MongoPlugin.collection(MERGE_COLLECTION).find(MongoDBObject()).sort(MongoDBObject("date" -> -1)).limit(1).toList.headOption
+        val maybeLastIncrementDate = maybeLastIncrement.flatMap(_.getAs[Date]("lastIncrement"))
+
+        val query = maybeLastIncrementDate.map(d => ("date" $gt d) ++ Profile.tweets.parentIdQuery(profile.id) ).getOrElse(Profile.tweets.parentIdQuery(profile.id))
+
+        val mapF = """function() {
+            var toMap = {
+               positive : (this.opinion.mood == "positive" && this.opinion.prob >= 0.7)  ? 1 : 0  ,
+               negative : (this.opinion.mood == "negative" && this.opinion.prob >= 0.7)  ? 1 : 0  ,
+               neutral  : (this.opinion.prob < 0.7) ? 1 : 0  ,
+               count : 1  ,
+               profileId: this.profileId  ,
+               last : this.date.getTime()
+            }
+            emit(this.profileId, toMap)
+            }"""
+        val reduceF = """function(key, values) {
+
+         var result = { positive : 0 , negative : 0 , neutral : 0, last : 0 , count : 0, profileId: key};
+         values.forEach(function(p) {
+            result.last = Math.max(p.last,result.last);
+            result.count += p.count;
+            result.positive += p.positive;
+            result.negative += p.negative;
+            result.neutral += p.neutral;
+         });
+
+         return result;
+      }"""
+        val finalizeF = """function(key, value) {
+         // this ugly shit is here in order to have consistant types returned (all float)
+         value.neutral += 0.0;
+         value.positive += 0.0;
+         value.negative += 0.0;
+         value.count += 0.0;
+
+         if (value.count > 0 ) {
+            var last = new Date();
+            last.setTime(value.last);
+            value.last = last;
+         }
+         return value;
+      }
+      """
+
+        MongoPlugin.collection("tweet").mapReduce(mapF,reduceF,MapReduceMergeOutput(MERGE_COLLECTION),finalizeFunction = Some(finalizeF), query = Some(query), verbose = true)
+
+     }
+}

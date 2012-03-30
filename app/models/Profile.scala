@@ -10,6 +10,7 @@ import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.libs.json.JsArray
 import play.api.Play.current
+import java.util.Date
 
 /**
  * Case class for Profile document
@@ -17,6 +18,7 @@ import play.api.Play.current
 case class Profile(@Key("_id") id: ObjectId = new ObjectId, expression: String) {
 
    def tweets = Profile.tweets.findByParentId(this.id).toList
+   def tweetsAfter(d:Date) = Profile.tweets.findByParentId(this.id,("date" $gt d))
 
 }
 /**
@@ -34,6 +36,31 @@ object Profile extends SalatDAO[Profile, ObjectId](collection = MongoPlugin.coll
       "tweets" -> JsArray(profile.tweets.map(toJson(_)))))
   }
 
+  def all = find(MongoDBObject()).toList
   def byTerm(expression:String) = findOne(MongoDBObject("expression" -> expression))
+
+
+
 }
-case class Statistics()
+
+/*
+
+sealed trait Statistics
+
+case class Daily(from:Date, value:MoodTotal) extends Statistics
+case class Weekly(from:Date, value:MoodTotal) extends Statistics
+case class Monthly(from:Date, value:MoodTotal) extends Statistics
+case class Overall(value:MoodTotal, lastIncrement:Date) extends Statistics
+
+case class MoodTotal(positive:Int,neutral:Int,negative:Int) {
+   def +(that:MoodTotal) = MoodTotal(
+         this.positive + that.positive,
+         this.neutral + that.neutral,
+         this.negative + that.negative
+   )
+}
+object MoodTotal {
+
+}
+*/
+
