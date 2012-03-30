@@ -11,8 +11,66 @@ import play.api.libs.json.Json._
 import play.api.libs.json.JsArray
 import play.api.Play.current
 
+case class HashTag(text: Option[String])
+
+object HashTag {
+  implicit object HashTagFormat extends Format[HashTag] {
+    def reads(json: JsValue) = {
+      HashTag((json \ "text").asOpt[String])
+    }
+    def writes(tag: HashTag): JsObject = JsObject(Seq(
+      "text" -> JsString(tag.text.get)))
+  }
+}
+
+case class Entity(hashtags: List[HashTag]) {}
+object Entity {
+  implicit object EntityFormat extends Format[Entity] {
+    def reads(json: JsValue) = {
+      Entity((json \ "hashtags").as[List[HashTag]])
+    }
+    def writes(entity: Entity): JsObject = JsObject(Seq(
+      "text" -> JsArray(entity.hashtags.map(toJson(_)))))
+  }
+
+}
+case class User(id: Long,
+  screen_name: Option[String] = None,
+  profile_image_url: Option[String] = None,
+  followers_count: Option[Long] = None,
+  friends_count: Option[Long] = None,
+  statuses_count: Option[Long] = None) {}
+
+object User {
+  implicit object UserFormat extends Format[User] {
+    def reads(json: JsValue) = {
+      User((json \ "id").as[Long],
+        (json \ "screen_name").asOpt[String],
+        (json \ "profile_image_url").asOpt[String],
+        (json \ "followers_count").asOpt[Long],
+        (json \ "friends_count").asOpt[Long],
+        (json \ "statuses_count").asOpt[Long])
+    }
+    def writes(user: User): JsObject = JsObject(Seq(
+      "id" -> JsNumber(user.id),
+      "screen_name" -> JsString(user.screen_name.get),
+      "profile_image_url" -> JsString(user.profile_image_url.get),
+      "followers_count" -> JsNumber(user.followers_count.get),
+      "friends_count" -> JsNumber(user.friends_count.get),
+      "statuses_count" -> JsNumber(user.statuses_count.get)))
+  }
+}
+
 //TODO : add properties
-case class Tweet(profileId:Option[ObjectId], text: String, opinion: Option[Opinion] = None, json: Option[DBObject] = None) {}
+case class Tweet(profileId: Option[ObjectId],
+  text: String,
+  opinion: Option[Opinion] = None,
+  json: Option[DBObject] = None,
+  retweet_count: Option[Long] = None,
+  created_at: Option[String] = None,
+  id: Option[Long] = None,
+  user: Option[User] = None,
+  entities: Option[Entity] = None) {}
 
 object Tweet extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collection("tweet")) {
 
@@ -20,13 +78,23 @@ object Tweet extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collecti
     def reads(json: JsValue): Tweet = Tweet(
       None,
       (json \ "text").as[String],
-      None
-    )
+      None,
+      None,
+      (json \ "retweet_count").asOpt[Long],
+      (json \ "created_at").asOpt[String],
+      (json \ "id").asOpt[Long],
+      (json \ "user").asOpt[User],
+      (json \ "entities").asOpt[Entity])
     def writes(tweet: Tweet): JsObject = JsObject(Seq(
       "profileId" -> JsString(tweet.profileId.toString),
       "text" -> JsString(tweet.text),
-      "opinion" -> toJson(tweet.opinion)
-    ))
+      "opinion" -> toJson(tweet.opinion),
+      "retweet_count" -> JsNumber(tweet.retweet_count.get),
+      "created_at" -> JsString(tweet.created_at.get),
+      "id" -> JsNumber(tweet.id.get),
+      "user" -> toJson(tweet.user),
+      "entities" -> toJson(tweet.entities)))
 
   }
 }
+
