@@ -1,9 +1,8 @@
 package actors
 
-
 import play.api._
 import libs.oauth.OAuthCalculator._
-import libs.oauth.{OAuthCalculator, RequestToken}
+import libs.oauth.{ OAuthCalculator, RequestToken }
 import libs.ws.WS
 import play.api.libs.iteratee._
 import play.api.libs.iteratee.Enumerator.Pushee
@@ -22,53 +21,45 @@ import play.api.libs.json.Json._
 import models.Tweet
 import models.Tweet._
 
-
 class StreamRecorder extends Actor {
-   import StreamRecorder._
-   import OpinionFinder._
+  import StreamRecorder._
+  import OpinionFinder._
 
+  def receive = {
+    case StartRecording(tokens, term) => {
+      //Define an Iteratee send each list of tweets to Opinion finder actor
+      val sendToOpinionFinder = Iteratee.foreach[List[Tweet]](list => OpinionFinder.ref ! Find(term, list: _*))
+      //Define an Enumratee that transform Byte tweets into a list of Objects 
+      val arrayToTweet: Enumeratee[Array[Byte], List[Tweet]] = Enumeratee.map[Array[Byte]](arr => {
+        val res = new String(arr)
+        Json.parse(res) match {
+          case l: JsArray => l.asOpt[List[Tweet]].getOrElse(Nil)
+          case o: JsObject => fromJson(o) :: Nil
+        }
+      })
+      //Iteratee to manage tweets stream
+      val wsIteratee = arrayToTweet.transform(sendToOpinionFinder)
+      //Add the wanted term to the profile 
+      Profile.insert(Profile(term))
+      //Open twitter streaming pipe
+      WS.url("https://stream.twitter.com/1/statuses/filter.json?track=" + term)
+        .sign(OAuthCalculator(Twitter.KEY, tokens))
+        .get(_ => wsIteratee)
+    }
 
-   def receive = {
-      case StartRecording(token, term) => {
-         val sendToActor = Iteratee.foreach[List[Tweet]]( list => OpinionFinder.ref ! Find(term,list:_*) )
-         val arrayToTweet: Enumeratee[Array[Byte], List[Tweet]] = Enumeratee.map[Array[Byte]]( arr => {
-            val res = new String(arr)
-            Json.parse(res) match {
-               case l: JsArray => l.asOpt[List[Tweet]].getOrElse(Nil)
-               case o: JsObject => fromJson(o) :: Nil
-            }
-         })
-
-        val wsIteratee = arrayToTweet.transform(sendToActor)
-
-        Profile.insert(Profile(term))
-        WS.url("https://stream.twitter.com/1/statuses/filter.json")
-               .withQueryString("track" -> term)
-               .sign(OAuthCalculator(Twitter.KEY, token))
-               .get(_ => wsIteratee)
-               
-              //OpinionFinder.ref ? Find(tweet)
-              // ajouter l'opinion dans le tweet du profil qu'on était en train d'enregister.
-
-
-
-      }
-         
-         
-
-      case StopRecording(term) => {
-         Logger.info("Stop recording "+term)
-      }
-      case _ => {
-         Logger.info("error matching actor message")
-      }
-   }
+    case StopRecording(term) => {
+      Logger.info("Stop recording " + term)
+    }
+    case _ => {
+      Logger.info("error matching actor message")
+    }
+  }
 }
 object StreamRecorder {
-   trait Event
-   case class StartRecording(tokens:RequestToken, term:String) extends Event
-   case class StopRecording(term:String) extends Event
-   case class Save(tweet:Tweet*) extends Event
-   //case class Init(expression:String)
-   lazy val ref = Akka.system.actorOf(Props[StreamRecorder])
+  trait Event
+  case class StartRecording(tokens: RequestToken, term: String) extends Event
+  case class StopRecording(term: String) extends Event
+  case class Save(tweet: Tweet*) extends Event
+  //case class Init(expression:String)
+  lazy val ref = Akka.system.actorOf(Props[StreamRecorder])
 }
