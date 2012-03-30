@@ -1,0 +1,6 @@
+- fenetrage automatique (pour dataviz cumulée ou pas)
+- bar de stats client
+- stats serveur
+- popup de drilldown sur une barre (liste des tweets avec sentiment, avatar, date...)
+- intégration page recherche
+- persistance server side
