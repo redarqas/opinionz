@@ -27,20 +27,26 @@ class StreamRecorder extends Actor {
 
   def receive = {
     case StartRecording(tokens, term) => {
+       Logger.debug("StreamRecorder received StartRecording("+tokens.toString()+","+term+")")
       //Define an Iteratee send each list of tweets to Opinion finder actor
-      val sendToOpinionFinder = Iteratee.foreach[List[Tweet]](list => OpinionFinder.ref ! Find(term, list: _*))
+      val sendToOpinionFinder = Iteratee.foreach[List[Tweet]](list => {
+         OpinionFinder.ref ! Find(term, list: _*)
+      })
       //Define an Enumratee that transform Byte tweets into a list of Objects 
       val arrayToTweet: Enumeratee[Array[Byte], List[Tweet]] = Enumeratee.map[Array[Byte]](arr => {
         val res = new String(arr)
+        Logger.debug(" --> New chunk")
         Json.parse(res) match {
-          case l: JsArray => l.asOpt[List[Tweet]].getOrElse(Nil)
-          case o: JsObject => fromJson(o) :: Nil
+          case l: JsArray => {
+             l.asOpt[List[Tweet]].getOrElse(Nil)
+          }
+          case o: JsObject => {
+             List(fromJson(o))
+          }
         }
       })
       //Iteratee to manage tweets stream
       val wsIteratee = arrayToTweet.transform(sendToOpinionFinder)
-      //Add the wanted term to the profile 
-      Profile.insert(Profile(term))
       //Open twitter streaming pipe
       WS.url("https://stream.twitter.com/1/statuses/filter.json?track=" + term)
         .sign(OAuthCalculator(Twitter.KEY, tokens))

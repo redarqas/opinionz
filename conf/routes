@@ -7,9 +7,11 @@
 GET     /                       controllers.Application.index
 GET     /logout                 controllers.Application.logout
 GET     /auth                   controllers.Twitter.authenticate
+GET     /search                 controllers.Profiles.index
 POST    /search                 controllers.Profiles.index
-GET     /stream/:term           controllers.Profiles.stream(term:String)
-POST    /result                 controllers.Profiles.create
+GET     /stream/:term           controllers.Profiles.stream(term)
+POST    /result                 controllers.Profiles.search
+GET     /:term                 controllers.Profiles.find(term)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

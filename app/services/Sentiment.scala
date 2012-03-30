@@ -3,16 +3,16 @@ package services
 import models._
 import play.api.libs.ws.WS
 import play.api.libs.json.Json._
+import play.api.libs.concurrent.Promise
 
 object Sentiment {
   /**
    * Get opinion
    */
-  def getSentiment(text: String) = {
+  def getSentiment(text: String):Promise[Opinion] = {
     WS.url(sentimentUrl).withQueryString(("api_key", key), ("text", text))
       .get()
-      .map { response => response.json.as[Opinion] }
-      .value.get
+      .map(_.json.as[Opinion])
   }
   /**
    * Add new sentence to repo
@@ -32,11 +32,4 @@ object Sentiment {
       .map { response => (response.json \ "quota_remaining").as[Long] }
       .value.get;
   }
-  
-  def startProfile(profile : Profile) {
-    Profile.insert(profile)
-    
-  }
-  
- 
 }
