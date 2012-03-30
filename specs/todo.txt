@@ -1,6 +1,8 @@
-- fenetrage automatique (pour dataviz cumulée ou pas)
+- fenetrage automatique aka mise à l'échelle (pour dataviz cumulée ou pas)
+- restauration de l'historique dans la vue
+- navigation dans l'historique des tweets
 - bar de stats client
 - stats serveur
 - popup de drilldown sur une barre (liste des tweets avec sentiment, avatar, date...)
 - intégration page recherche
-- persistance server side
+- persistence server side
