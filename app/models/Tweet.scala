@@ -70,12 +70,13 @@ case class Tweet(profileId: Option[ObjectId],
   opinion: Option[Opinion] = None,
   json: Option[DBObject] = None,
   retweet_count: Option[Long] = None,
-  created_at: Option[String] = None,
+  created_at: Option[Date] = None,
   id: Option[Long] = None,
   user: Option[User] = None,
   entities: Option[Entity] = None) {}
 
 object Tweet extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collection("tweet")) {
+  val dateFormat: java.text.SimpleDateFormat  = new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss ZZZZZ yyyy", java.util.Locale.ENGLISH)
 
   implicit object TweetFormat extends Format[Tweet] {
     def reads(json: JsValue): Tweet = Tweet(
@@ -84,7 +85,7 @@ object Tweet extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collecti
       None,
       None,
       (json \ "retweet_count").asOpt[Long],
-      (json \ "created_at").asOpt[String],
+      (json \ "created_at").asOpt[String].map(t => dateFormat.parse(t)),
       (json \ "id").asOpt[Long],
       (json \ "user").asOpt[User],
       (json \ "entities").asOpt[Entity])
@@ -93,7 +94,7 @@ object Tweet extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collecti
       "text" -> JsString(tweet.text),
       "opinion" -> toJson(tweet.opinion),
       "retweet_count" -> JsNumber(tweet.retweet_count.get),
-      "created_at" -> JsString(tweet.created_at.get),
+      "created_at" -> JsString(dateFormat.format(tweet.created_at.get)),
       "id" -> JsNumber(tweet.id.get),
       "user" -> toJson(tweet.user),
       "entities" -> toJson(tweet.entities)))
