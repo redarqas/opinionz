@@ -17,8 +17,8 @@ import java.util.Date
  */
 case class Profile(@Key("_id") id: ObjectId = new ObjectId, expression: String) {
 
-   def tweets = Profile.tweets.findByParentId(this.id).toList
-   def tweetsAfter(d:Date) = Profile.tweets.findByParentId(this.id,("date" $gt d))
+  def tweets = Profile.tweets.findByParentId(this.id).toList
+  def tweetsAfter(d: Date) = Profile.tweets.findByParentId(this.id, ("date" $gt d))
 
 }
 /**
@@ -37,9 +37,7 @@ object Profile extends SalatDAO[Profile, ObjectId](collection = MongoPlugin.coll
   }
 
   def all = find(MongoDBObject()).toList
-  def byTerm(expression:String) = findOne(MongoDBObject("expression" -> expression))
-
-
+  def byTerm(expression: String) = findOne(MongoDBObject("expression" -> expression))
 
 }
 

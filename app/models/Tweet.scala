@@ -13,30 +13,24 @@ import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.Play.current
 import play.Logger
+import play.api.libs.functional.syntax._
 
 case class HashTag(text: Option[String])
 
 object HashTag {
-  implicit object HashTagFormat extends Format[HashTag] {
-    def reads(json: JsValue) = {
-      HashTag((json \ "text").asOpt[String])
-    }
-    def writes(tag: HashTag): JsObject = JsObject(Seq(
+  implicit val hashTagWrite = new Writes[HashTag] {
+    def writes(tag: HashTag): JsValue = JsObject(Seq(
       "text" -> JsString(tag.text.get)))
   }
+  implicit val hashTagRead = Json.reads[HashTag]
 }
 
 case class Entity(hashtags: List[HashTag]) {}
 object Entity {
-  implicit object EntityFormat extends Format[Entity] {
-    def reads(json: JsValue) = {
-      Entity((json \ "hashtags").as[List[HashTag]])
-    }
-    def writes(entity: Entity): JsObject = JsObject(Seq(
-      "text" -> JsArray(entity.hashtags.map(toJson(_)))))
-  }
-
+  implicit val entityWrite = Json.writes[Entity]
+  implicit val entityRead = Json.reads[Entity]
 }
+
 case class User(id: Long,
   screen_name: Option[String] = None,
   profile_image_url: Option[String] = None,
@@ -45,23 +39,8 @@ case class User(id: Long,
   statuses_count: Option[Long] = None) {}
 
 object User {
-  implicit object UserFormat extends Format[User] {
-    def reads(json: JsValue) = {
-      User((json \ "id").as[Long],
-        (json \ "screen_name").asOpt[String],
-        (json \ "profile_image_url").asOpt[String],
-        (json \ "followers_count").asOpt[Long],
-        (json \ "friends_count").asOpt[Long],
-        (json \ "statuses_count").asOpt[Long])
-    }
-    def writes(user: User): JsObject = JsObject(Seq(
-      "id" -> JsNumber(user.id),
-      "screen_name" -> JsString(user.screen_name.get),
-      "profile_image_url" -> JsString(user.profile_image_url.get),
-      "followers_count" -> JsNumber(user.followers_count.get),
-      "friends_count" -> JsNumber(user.friends_count.get),
-      "statuses_count" -> JsNumber(user.statuses_count.get)))
-  }
+  implicit val userRead = Json.reads[User]
+  implicit val userWrite = Json.writes[User]
 }
 
 //TODO : add properties
@@ -76,20 +55,18 @@ case class Tweet(profileId: Option[ObjectId],
   entities: Option[Entity] = None) {}
 
 object Tweet extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collection("tweet")) {
-  val dateFormat: java.text.SimpleDateFormat  = new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss ZZZZZ yyyy", java.util.Locale.ENGLISH)
+  val dateFormat: java.text.SimpleDateFormat = new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss ZZZZZ yyyy", java.util.Locale.ENGLISH)
 
-  implicit object TweetFormat extends Format[Tweet] {
-    def reads(json: JsValue): Tweet = Tweet(
-      None,
-      (json \ "text").as[String],
-      None,
-      None,
-      (json \ "retweet_count").asOpt[Long],
-      (json \ "created_at").asOpt[String].map(t => dateFormat.parse(t)),
-      (json \ "id").asOpt[Long],
-      (json \ "user").asOpt[User],
-      (json \ "entities").asOpt[Entity])
-    def writes(tweet: Tweet): JsObject = JsObject(Seq(
+  implicit val tweetRead = (
+    (__ \ "text").read[String] and
+    (__ \ "retweet_count").readNullable[Long] and
+    (__ \ "created_at").readNullable[String].map(d => d.map(t => dateFormat.parse(t))) and
+    (__ \ "id").readNullable[Long] and
+    (__ \ "user").readNullable[User] and
+    (__ \ "entities").readNullable[Entity])((text, retweet_count, created_at, id, user, entities) =>
+      Tweet(None, text, None, None, retweet_count, created_at, id, user, entities))
+  implicit val tweetWrite = new Writes[Tweet] {
+    def writes(tweet: Tweet): JsValue = JsObject(Seq(
       "profileId" -> JsString(tweet.profileId.toString),
       "text" -> JsString(tweet.text),
       "opinion" -> toJson(tweet.opinion),
@@ -98,19 +75,18 @@ object Tweet extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collecti
       "id" -> JsNumber(tweet.id.get),
       "user" -> toJson(tweet.user),
       "entities" -> toJson(tweet.entities)))
-
   }
 
-  def incMapReduce(profile:Profile) = {
-     Logger.debug("New MapReduce Operation")
-     val MERGE_COLLECTION: String = "globalStatistics"
+  def incMapReduce(profile: Profile) = {
+    Logger.debug("New MapReduce Operation")
+    val MERGE_COLLECTION: String = "globalStatistics"
 
-     val maybeLastIncrement = MongoPlugin.collection(MERGE_COLLECTION).find(MongoDBObject()).sort(MongoDBObject("date" -> -1)).limit(1).toList.headOption
-        val maybeLastIncrementDate = maybeLastIncrement.flatMap(_.getAs[Date]("lastIncrement"))
+    val maybeLastIncrement = MongoPlugin.collection(MERGE_COLLECTION).find(MongoDBObject()).sort(MongoDBObject("date" -> -1)).limit(1).toList.headOption
+    val maybeLastIncrementDate = maybeLastIncrement.flatMap(_.getAs[Date]("lastIncrement"))
 
-        val query = maybeLastIncrementDate.map(d => ("date" $gt d) ++ Profile.tweets.parentIdQuery(profile.id) ).getOrElse(Profile.tweets.parentIdQuery(profile.id))
+    val query = maybeLastIncrementDate.map(d => ("date" $gt d) ++ Profile.tweets.parentIdQuery(profile.id)).getOrElse(Profile.tweets.parentIdQuery(profile.id))
 
-        val mapF = """function() {
+    val mapF = """function() {
             var toMap = {
                positive : (this.opinion.mood == "positive" && this.opinion.prob >= 0.7)  ? 1 : 0  ,
                negative : (this.opinion.mood == "negative" && this.opinion.prob >= 0.7)  ? 1 : 0  ,
@@ -121,7 +97,7 @@ object Tweet extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collecti
             }
             emit(this.profileId, toMap)
             }"""
-        val reduceF = """function(key, values) {
+    val reduceF = """function(key, values) {
 
          var result = { positive : 0 , negative : 0 , neutral : 0, last : 0 , count : 0, profileId: key};
          values.forEach(function(p) {
@@ -134,7 +110,7 @@ object Tweet extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collecti
 
          return result;
       }"""
-        val finalizeF = """function(key, value) {
+    val finalizeF = """function(key, value) {
          // this ugly shit is here in order to have consistant types returned (all float)
          value.neutral += 0.0;
          value.positive += 0.0;
@@ -150,7 +126,7 @@ object Tweet extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collecti
       }
       """
 
-        MongoPlugin.collection("tweet").mapReduce(mapF,reduceF,MapReduceMergeOutput(MERGE_COLLECTION),finalizeFunction = Some(finalizeF), query = Some(query), verbose = true)
+    MongoPlugin.collection("tweet").mapReduce(mapF, reduceF, MapReduceMergeOutput(MERGE_COLLECTION), finalizeFunction = Some(finalizeF), query = Some(query), verbose = true)
 
-     }
+  }
 }
