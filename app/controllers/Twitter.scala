@@ -25,7 +25,7 @@ object Twitter extends Controller {
 
   /** ======= OAuth1 ======= **/
   //Define Opinionz application Key
-  val KEY = ConsumerKey("MeyiTzK7aKo0zMjH0teehQ", "UZ36qB06jpcUgdlPMOY8SO4zciNDdQkzNT7ce45kY")
+  val KEY = ConsumerKey("f3uBW3ySq3UtjVrnBOfA", "GoAkZKtxHx67uvejG9I2drqC8c342KZQoYn2b30g")
   //Define Twitter OAuth endpoints
   val TWITTER = OAuth(ServiceInfo(
     "https://api.twitter.com/oauth/request_token",
