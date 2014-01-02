@@ -3,13 +3,6 @@ package controllers
 import play.api._
 import play.api.mvc._
 import models._
-
-/**
- * User: alabbe
- * Date: 21/02/12
- * Time: 21:32
- */
-
 import views._
 
 import play.Logger

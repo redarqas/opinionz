@@ -1,1 +1,1 @@
-400:play.modules.mongodb.MongoPlugin
+400:play.modules.reactivemongo.ReactiveMongoPlugin

@@ -23,16 +23,10 @@ class OpinionFinder extends Actor {
 
       tweetsWithOpinion.map { tws =>
         ProfileWorker.ref ! NewTweets(term, tws: _*)
-        //TODO : Insert tweet for this profile
-        //        Profile.findOne(MongoDBObject("expression" -> term)) //FIX-ME what s
-        //          .map(_.id)
-        //          .map { profileId =>
-        //            tws.map(t => Tweet.insert(t.copy(profileId = Some(profileId)))) //
-        //          }
+        Profile.findOne(term).map { profile =>
+          tws.map(t => profile.insertTweet(t))
+        }
       }
-    }
-    case _ => {
-      Logger.info("error matching actor message")
     }
   }
 }

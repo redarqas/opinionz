@@ -19,13 +19,15 @@ object Resolvers {
   val sunrepoGF  = "Sun GF Maven2 Repo" at "http://download.java.net/maven/glassfish"
   val oraclerepo = "Oracle Maven2 Repo" at "http://download.oracle.com/maven"
   val novusRepo  = "repo.novus snaps" at "http://repo.novus.com/snapshots/"
+  val sonatype   = "Sonatype Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/"
 
-  val oracleResolvers = Seq (sunrepo, sunrepoGF, oraclerepo, novusRepo)
+  val oracleResolvers = Seq (sunrepo, sunrepoGF, oraclerepo, novusRepo, sonatype)
 }
 
 object Dependencies {
  val scalatest = "org.scalatest" % "scalatest_2.10" % "2.0" % "test"
  val salat = "com.novus" %% "salat" % "1.9.4"
+ val reactivemongo = "org.reactivemongo" %% "play2-reactivemongo" % "0.10.0"
 }
 
 object AppBuild extends Build {
@@ -36,7 +38,8 @@ object AppBuild extends Build {
   // Sub-project specific dependencies
   val commonDeps = Seq (
     scalatest,
-    salat
+    salat,
+    reactivemongo
   )
   
   lazy val app = Project (

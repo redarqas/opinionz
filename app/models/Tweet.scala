@@ -1,19 +1,19 @@
 package models
 import java.util.Date
-import com.novus.salat._
-import com.novus.salat.global._
-import com.novus.salat.annotations._
-import com.novus.salat.dao._
-import com.mongodb.casbah.Imports._
-import play.modules.mongodb._
-import com.novus.salat.dao._
-import com.mongodb.casbah.Imports._
-import play.modules.mongodb._
 import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.Play.current
 import play.Logger
 import play.api.libs.functional.syntax._
+import play.api.libs.functional.syntax._
+import reactivemongo.api._
+import reactivemongo.bson.BSONObjectID
+import reactivemongo.bson.BSONDocument
+import play.modules.reactivemongo.ReactiveMongoPlugin._
+import play.modules.reactivemongo.json.collection.JSONCollection
+
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import scala.concurrent.Future
 
 case class HashTag(text: Option[String])
 
@@ -44,17 +44,17 @@ object User {
 }
 
 //TODO : add properties
-case class Tweet(profileId: Option[ObjectId],
+case class Tweet(profileId: Option[BSONObjectID],
   text: String,
   opinion: Option[Opinion] = None,
-  json: Option[DBObject] = None,
+  json: Option[BSONDocument] = None,
   retweet_count: Option[Long] = None,
   created_at: Option[Date] = None,
   id: Option[Long] = None,
   user: Option[User] = None,
   entities: Option[Entity] = None) {}
 
-object Tweet extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collection("tweet")) {
+object Tweet { //extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collection("tweet")) {
   val dateFormat: java.text.SimpleDateFormat = new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss ZZZZZ yyyy", java.util.Locale.ENGLISH)
 
   implicit val tweetRead = (
@@ -77,12 +77,14 @@ object Tweet extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collecti
       "entities" -> toJson(tweet.entities)))
   }
 
-  def incMapReduce(profile: Profile) = {
+  /*def incMapReduce(profile: Profile) = {
     Logger.debug("New MapReduce Operation")
     val MERGE_COLLECTION: String = "globalStatistics"
 
-    val maybeLastIncrement = MongoPlugin.collection(MERGE_COLLECTION).find(MongoDBObject()).sort(MongoDBObject("date" -> -1)).limit(1).toList.headOption
-    val maybeLastIncrementDate = maybeLastIncrement.flatMap(_.getAs[Date]("lastIncrement"))
+    val maybeLastIncrement: Future[Option[Tweet]] = db.collection[JSONCollection](MERGE_COLLECTION)
+    .find(Json.parse("{}")).sort(Json.obj("date" -> -1)).one
+    
+    val maybeLastIncrementDate = maybeLastIncrement.flatMap(o => )
 
     val query = maybeLastIncrementDate.map(d => ("date" $gt d) ++ Profile.tweets.parentIdQuery(profile.id)).getOrElse(Profile.tweets.parentIdQuery(profile.id))
 
@@ -128,5 +130,5 @@ object Tweet extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collecti
 
     MongoPlugin.collection("tweet").mapReduce(mapF, reduceF, MapReduceMergeOutput(MERGE_COLLECTION), finalizeFunction = Some(finalizeF), query = Some(query), verbose = true)
 
-  }
+  }*/
 }

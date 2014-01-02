@@ -13,7 +13,7 @@ import models.{ Profile, Tweet }
 class StatsWorker extends Actor {
   def receive = {
     case g: GlobalComputation => {
-      Profile.all.map(Tweet.incMapReduce(_))
+     // Profile.all.map(Tweet.incMapReduce(_))
       Logger.debug("Global stats computation hook over")
     }
     case d: DailyComputation => {

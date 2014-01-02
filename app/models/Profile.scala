@@ -1,64 +1,77 @@
 package models
 
-import com.novus.salat._
-import com.novus.salat.global._
-import com.novus.salat.annotations._
-import com.novus.salat.dao._
-import com.mongodb.casbah.Imports._
-import play.modules.mongodb._
 import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.libs.json.JsArray
 import play.api.Play.current
 import java.util.Date
+import play.api.libs.functional.syntax._
+import reactivemongo.api._
+import reactivemongo.bson.BSONObjectID
+import reactivemongo.bson.BSONDocument
+import play.modules.reactivemongo.ReactiveMongoPlugin._
+import play.modules.reactivemongo.json.collection.JSONCollection
+
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import scala.concurrent.Future
+import Tweet._
+import play.api.Logger
 
 /**
  * Case class for Profile document
  */
-case class Profile(@Key("_id") id: ObjectId = new ObjectId, expression: String) {
-
-  def tweets = Profile.tweets.findByParentId(this.id).toList
-  def tweetsAfter(d: Date) = Profile.tweets.findByParentId(this.id, ("date" $gt d))
+case class Profile(_id: BSONObjectID = BSONObjectID.generate, expression: String) {
+  def tweets: Future[List[Tweet]] = Profile.tweetCollection.find(Json.parse("{}")).cursor[Tweet].collect[List]()
+  def tweetsAfter(d: Date): Future[List[Tweet]] = Profile.tweetCollection.find(Json.obj("date" -> Json.obj("$gt" -> d))).cursor[Tweet].collect[List]()
+  def insertTweet(tweet: Tweet) =
+    Profile.tweetCollection.insert(tweet.copy(profileId = Some(_id)))
 
 }
 /**
  * JSON formatter
  */
 
-object Profile extends SalatDAO[Profile, ObjectId](collection = MongoPlugin.collection("profile")) {
-
-  val tweets = new ChildCollection[Tweet, ObjectId](collection = MongoPlugin.collection("tweet"), parentIdField = "profileId") {}
-
-  implicit object ProfileFormat extends Writes[Profile] {
+object Profile {
+  implicit val profileWrite: Writes[Profile] = new Writes[Profile] {
     def writes(profile: Profile) = JsObject(Seq(
-      "id" -> JsString(profile.id.toString),
-      "expression" -> JsString(profile.expression),
-      "tweets" -> JsArray(profile.tweets.map(toJson(_)))))
+      "_id" -> JsString(profile._id.stringify),
+      "expression" -> JsString(profile.expression)))
+  }
+  implicit val profileRead: Reads[Profile] = (
+    (__ \ "_id").read[String].map(i => BSONObjectID(i)) and
+    (__ \ "expression").read[String])(Profile.apply _)
+
+  val profileCollection: JSONCollection = db.collection[JSONCollection]("profile")
+  val tweetCollection: JSONCollection = db.collection[JSONCollection]("tweet")
+
+  def all: Future[List[Profile]] = profileCollection.find(Json.parse("{}")).cursor[Profile].collect[List]()
+  def findOne(expression: String): Future[Profile] = {
+    Logger.debug("expression: String" + expression)
+    all.map(println)
+    profileCollection.
+      find(Json.obj("expression" -> expression)).
+      cursor[Profile].
+      headOption map {
+        case Some(e) =>
+          Logger.debug("Some(e) ------ " + e)
+          e
+        case None =>
+          Logger.debug("None ----------- ")
+          throw new Exception("Not found")
+      }
+  }
+  def insert(term: String): Future[Profile] = {
+    profileCollection.insert(Profile(expression = term)) flatMap { lastError =>
+      Logger.debug("lastError " + lastError)
+      findOne(term)
+    } recover {
+      case e => throw new Exception(e)
+    }
   }
 
-  def all = find(MongoDBObject()).toList
-  def byTerm(expression: String) = findOne(MongoDBObject("expression" -> expression))
+  def findOrCreate(term: String): Future[Profile] = {
+    Logger.debug("findOrCreate(term: String)" + term)
+    Profile.findOne(term).fallbackTo(Profile.insert(term))
+  }
 
 }
-
-/*
-
-sealed trait Statistics
-
-case class Daily(from:Date, value:MoodTotal) extends Statistics
-case class Weekly(from:Date, value:MoodTotal) extends Statistics
-case class Monthly(from:Date, value:MoodTotal) extends Statistics
-case class Overall(value:MoodTotal, lastIncrement:Date) extends Statistics
-
-case class MoodTotal(positive:Int,neutral:Int,negative:Int) {
-   def +(that:MoodTotal) = MoodTotal(
-         this.positive + that.positive,
-         this.neutral + that.neutral,
-         this.negative + that.negative
-   )
-}
-object MoodTotal {
-
-}
-*/
-
