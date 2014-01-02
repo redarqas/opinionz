@@ -1,7 +1,6 @@
 import actors.StatsWorker
 import actors.StatsWorker._
 import play.api._
-import scala.actors.Scheduler
 import play.libs.Akka
 import scala.concurrent.duration._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
