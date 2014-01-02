@@ -20,39 +20,25 @@ import play.api.libs.json._
 import play.api.libs.json.Json._
 import models.Tweet
 import models.Tweet._
-import play.modules.mongodb.MongoJson
-import com.mongodb.DBObject
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 class StreamRecorder extends Actor {
+
   import StreamRecorder._
   import OpinionFinder._
+  import Tweet._
 
   def receive = {
     case StartRecording(tokens, term) => {
-       Logger.debug("StreamRecorder received StartRecording("+tokens.toString()+","+term+")")
       //Define an Iteratee send each list of tweets to Opinion finder actor
       val sendToOpinionFinder = Iteratee.foreach[List[Tweet]](list => {
-         OpinionFinder.ref ! Find(term, list: _*)
+        OpinionFinder.ref ! Find(term, list: _*)
       })
       //Define an Enumratee that transform Byte tweets into a list of Objects 
       val arrayToTweet: Enumeratee[Array[Byte], List[Tweet]] = Enumeratee.map[Array[Byte]](arr => {
-        val res = new String(arr)
-        Logger.debug(" --> New chunk")
-        val o: JsValue = Json.parse(res)
-        val t: Tweet = fromJson(o)
-        Logger.debug("Deserialized tweet:"+t)
+        val o: JsValue = Json.parse(new String(arr))
+        val t: Tweet = Tweet.tweetRead.reads(o).get
         List(t)
-         /*try {
-            val json: DBObject = MongoJson.fromJson(JsObject(Seq("test"-> JsString("bordel"))))
-            Logger.debug(" Mongoplugin json:"+json.toString)
-            List(t.copy(json = Some(json)))
-         } catch {
-            case e => {
-               Logger.debug(e.getMessage)
-               throw new RuntimeException("Error occurred",e)
-            }
-         }*/
-
       })
       //Iteratee to manage tweets stream
       val wsIteratee = arrayToTweet.transform(sendToOpinionFinder)
@@ -61,13 +47,10 @@ class StreamRecorder extends Actor {
         .sign(OAuthCalculator(Twitter.KEY, tokens))
         .get(_ => wsIteratee)
     }
-
     case StopRecording(term) => {
       Logger.info("Stop recording " + term)
     }
-    case _ => {
-      Logger.info("error matching actor message")
-    }
+
   }
 }
 object StreamRecorder {
