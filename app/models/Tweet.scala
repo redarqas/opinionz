@@ -54,7 +54,7 @@ case class Tweet(profileId: Option[BSONObjectID],
   user: Option[User] = None,
   entities: Option[Entity] = None) {}
 
-object Tweet { //extends SalatDAO[Tweet, ObjectId](collection = MongoPlugin.collection("tweet")) {
+object Tweet { 
   val dateFormat: java.text.SimpleDateFormat = new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss ZZZZZ yyyy", java.util.Locale.ENGLISH)
 
   implicit val tweetRead = (

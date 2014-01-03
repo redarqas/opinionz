@@ -14,7 +14,6 @@ function twitterStringToDate (s) {
 }
 function pushTweet(tweet) {
   var opinion = (tweet.opinion.mood == "positive") ? {prob: tweet.opinion.prob, color: 'blue'} : {prob: -tweet.opinion.prob, color: 'red'}
-  
   tweetdata.push({x: twitterStringToDate(tweet.created_at).getTime(), y: opinion.prob, size: tweet.opinion.prob, color: opinion.color});
   redraw()
 }
@@ -27,11 +26,8 @@ function redraw() {
     var height = 100;
     var zoom = 3;
 
-    //var x = d3.time.scale().ticks(d3.time.second, 1)
-   // chart.useInteractiveGuideline(true);
     chart.xAxis
         .axisLabel('Date')
-        //.scale(x)
         .tickFormat(function(d) { return d3.time.format.utc("%X")(new Date(d)); });
 
     chart.yAxis
@@ -78,8 +74,6 @@ function redraw() {
         svg.attr("height", Math.round(targetWidth / aspect));
       }
     };
-
-
     return chart;
   });
 }

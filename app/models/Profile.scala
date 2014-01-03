@@ -46,8 +46,6 @@ object Profile {
 
   def all: Future[List[Profile]] = profileCollection.find(Json.parse("{}")).cursor[Profile].collect[List]()
   def findOne(expression: String): Future[Profile] = {
-    Logger.debug("expression: String" + expression)
-    all.map(println)
     profileCollection.
       find(Json.obj("expression" -> expression)).
       cursor[Profile].
