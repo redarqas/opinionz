@@ -52,12 +52,8 @@ object Profile {
       find(Json.obj("expression" -> expression)).
       cursor[Profile].
       headOption map {
-        case Some(e) =>
-          Logger.debug("Some(e) ------ " + e)
-          e
-        case None =>
-          Logger.debug("None ----------- ")
-          throw new Exception("Not found")
+        case Some(e) => e
+        case None => throw new Exception("Not found")
       }
   }
   def insert(term: String): Future[Profile] = {

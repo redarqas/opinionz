@@ -34,10 +34,8 @@ class StreamRecorder extends Actor {
 
     case StartRecording(tokens, term) =>
       val client = sender
-      Logger.debug("StartRecording(tokens, term)"+StartRecording(tokens, term))
       Profile.findOrCreate(term) onComplete {
         case Success(p) =>
-          Logger.debug(" Success(p))"+p)
           client ! RecordingStarted
           self ! Record(tokens, term, client)
         case Failure(t) => self ! RecordingFailed
@@ -57,7 +55,7 @@ class StreamRecorder extends Actor {
       //Iteratee to manage tweets stream
       val wsIteratee = arrayToTweet &>> sendToOpinionFinder
       //Open twitter streaming pipe
-      WS.url("https://stream.twitter.com/1/statuses/filter.json?track=" + term)
+      WS.url("https://stream.twitter.com/1/statuses/filter.json").withQueryString("track" -> term)
         .sign(OAuthCalculator(Twitter.KEY, tokens))
         .get(_ => wsIteratee)
     }

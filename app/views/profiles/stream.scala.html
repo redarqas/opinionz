@@ -4,19 +4,21 @@
 
 
 @main("Welcome to Play 2.0") {
-    
-    
-    <div id="header"> 
+<div id="header"> 
     <img class="logo" src="@routes.Assets.at("images/opinionz.png")"></img>
-    </div>
-    <div id="content">      
-<iframe style="display:none" id="streaming"></iframe>
+</div>
+<div id="content">      
+  <iframe style="display:none" id="streaming"></iframe>
 
-<a href="javascript:window.viewport.backward()"> backward</a>
+  
+<div id="chart1" class='with-transitions'>
+    <svg></svg>
+</div>
 
 <div id="holder"></div>
 </div>
 
+<script src="@routes.Assets.at("javascripts/tweetchart.js")"></script>
 
 <script type="text/javascript">
 
@@ -26,8 +28,9 @@
 	var chart = new Chart(document.getElementById('holder'), 800, 600, nb_units);
 
 	function streamit(tweet) {
-		data.add(tweet);
-		paint(); 
+    data.add(tweet);
+		paint();
+    pushTweet(tweet);
 	 }
 
 
@@ -52,5 +55,7 @@
 	});
 
 </script>
+
+
 
 }
