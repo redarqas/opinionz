@@ -52,7 +52,7 @@ case class Tweet(profileId: Option[BSONObjectID],
   created_at: Option[Date] = None,
   id: Option[Long] = None,
   user: Option[User] = None,
-  entities: Option[Entity] = None) {}
+  entities: Option[Entity] = None)
 
 object Tweet { 
   val dateFormat: java.text.SimpleDateFormat = new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss ZZZZZ yyyy", java.util.Locale.ENGLISH)

@@ -18,37 +18,14 @@
 <div id="holder"></div>
 </div>
 
-<script src="@routes.Assets.at("javascripts/tweetchart.js")"></script>
+<script src="@routes.Assets.at("javascripts/stream.js")"></script>
 
 <script type="text/javascript">
-
-	var data = new Data();
-	var nb_units = 50;
-	var viewport = new Viewport(data, nb_units);
-	var chart = new Chart(document.getElementById('holder'), 800, 600, nb_units);
-
+  var chart = new StreamChart("@profile.expression", "#chart1 svg", "#chart1", "svg")
+  chart.redraw()
 	function streamit(tweet) {
-    data.add(tweet);
-		paint();
-    pushTweet(tweet);
-	 }
-
-
-	 function paint() {
-
- 		chart.clear();
-		chart.axis();
-
-		/* we need to normalize the height of the charts bar based on the max number of tweets */
-		chart.norm = viewport.max();
-
-		var units = viewport.units();
-
-		for (var i =0; i<units.length; i++) {
-			chart.bar(i, units[i].neutral.length, units[i].positive.length, units[i].negative.length);
-		}
-	 }
-
+    chart.pushTweet(tweet);
+	}
 
 	$(function(){
 	  	$("#streaming").attr("src", "/stream/" + "@profile.expression");
