@@ -11,11 +11,12 @@ import reactivemongo.bson.BSONObjectID
 import reactivemongo.bson.BSONDocument
 import play.modules.reactivemongo.ReactiveMongoPlugin._
 import play.modules.reactivemongo.json.collection.JSONCollection
-
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import scala.concurrent.Future
 import Tweet._
 import play.api.Logger
+import scala.concurrent.Promise
+import scala.util.{Try, Success, Failure}
 
 /**
  * Case class for Profile document
@@ -49,9 +50,9 @@ object Profile {
     profileCollection.
       find(Json.obj("expression" -> expression)).
       cursor[Profile].
-      headOption map {
-        case Some(e) => e
-        case None => throw new Exception("Not found")
+      headOption flatMap {
+        case Some(e) =>Future.successful(e)
+        case None =>  Future.failed(throw new Exception("Not found"))
       }
   }
   def insert(term: String): Future[Profile] = {
@@ -64,8 +65,12 @@ object Profile {
   }
 
   def findOrCreate(term: String): Future[Profile] = {
-    Logger.debug("findOrCreate(term: String)" + term)
-    Profile.findOne(term).fallbackTo(Profile.insert(term))
+    val p: Promise[Profile] = Promise[Profile]()
+    Profile.findOne(term) onComplete {
+      case s @ Success(e) => p.complete(s)
+      case Failure(_) =>  p.completeWith(Profile.insert(term))
+    }
+    p.future
   }
 
 }

@@ -29,7 +29,7 @@ class StreamRecorder extends Actor {
   import StreamRecorder._
   import OpinionFinder._
   import Tweet._
-
+  var count = 0
   def receive = {
 
     case StartRecording(tokens, term) =>
@@ -44,10 +44,12 @@ class StreamRecorder extends Actor {
     case Record(tokens, term, client) => {
       //Define an Iteratee send each list of tweets to Opinion finder actor
       val sendToOpinionFinder = Iteratee.foreach[List[Tweet]](list => {
+        
         OpinionFinder.ref ! Find(term, list: _*)
       })
       //Define an Enumratee that transform Byte tweets into a list of Objects 
       val arrayToTweet: Enumeratee[Array[Byte], List[Tweet]] = Enumeratee.map[Array[Byte]](arr => {
+        count += 1
         val o: JsValue = Json.parse(new String(arr))
         val t: Tweet = Tweet.tweetRead.reads(o).get
         List(t)
@@ -56,6 +58,7 @@ class StreamRecorder extends Actor {
       val wsIteratee = arrayToTweet &>> sendToOpinionFinder
       //Open twitter streaming pipe
       WS.url("https://stream.twitter.com/1/statuses/filter.json").withQueryString("track" -> term)
+        .withRequestTimeout(100000000)
         .sign(OAuthCalculator(Twitter.KEY, tokens))
         .get(_ => wsIteratee)
     }

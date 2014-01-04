@@ -11,13 +11,13 @@ object Global extends GlobalSettings {
 
     //incremental statistics computation
     Akka.system.scheduler.schedule(3 seconds, 60 seconds) {
-      StatsWorker.ref ! GlobalComputation()
+      //StatsWorker.ref ! GlobalComputation()
     }
     Akka.system.scheduler.schedule(3 seconds, 1 day) {
-      StatsWorker.ref ! DailyComputation()
+      //StatsWorker.ref ! DailyComputation()
     }
     Akka.system.scheduler.schedule(3 seconds, 7 days) {
-      StatsWorker.ref ! WeeklyComputation()
+      //StatsWorker.ref ! WeeklyComputation()
     }
 
   }
