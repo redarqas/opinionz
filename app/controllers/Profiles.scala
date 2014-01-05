@@ -73,4 +73,8 @@ object Profiles extends Controller {
       case TweetStream(chunks) => Ok.chunked(chunks &> cometEnumeratee)
     }
   }
+  
+  def join(term: String) = WebSocket.async[JsValue] { request =>
+    ProfileWorker.join(term)
+  }
 }

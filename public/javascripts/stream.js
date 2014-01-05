@@ -53,7 +53,7 @@ StreamChart.prototype.redraw = function() {
 	 nv.addGraph(function() {
 		    var chart = nv.models.scatterChart();
 		    var width = 500;
-		    var height = 100;
+		    var height = 155;
 		    var zoom = 3;
 
 		    chart.xAxis
