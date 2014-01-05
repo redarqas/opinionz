@@ -53,7 +53,7 @@ StreamChart.prototype.redraw = function() {
 	 nv.addGraph(function() {
 		    var chart = nv.models.scatterChart();
 		    var width = 500;
-		    var height = 155;
+		    var height = 220;
 		    var zoom = 3;
 
 		    chart.xAxis
@@ -61,7 +61,7 @@ StreamChart.prototype.redraw = function() {
 		        .tickFormat(function(d) { return d3.time.format.utc("%X")(new Date(d)); });
 
 		    chart.yAxis
-		        .axisLabel('Opinion (v)')
+		        .axisLabel('Opinion')
 		        .tickFormat(d3.format(',.1f'));
             d3.select(self.selector)
 		        .attr('perserveAspectRatio', 'xMinYMid')

@@ -18,7 +18,10 @@ object Twitter extends Controller {
 
   /** ======= OAuth1 ======= **/
   //Define Opinionz application Key
-  val KEY = ConsumerKey("f3uBW3ySq3UtjVrnBOfA", "GoAkZKtxHx67uvejG9I2drqC8c342KZQoYn2b30g")
+  val k = Play.current.configuration.getString("twitter.key").get
+  val s = Play.current.configuration.getString("twitter.secret").get
+  val baseUrl = Play.current.configuration.getString("application.baseUrl").get
+  val KEY = ConsumerKey(k, s)
   //Define Twitter OAuth endpoints
   val TWITTER = OAuth(ServiceInfo(
     "https://api.twitter.com/oauth/request_token",
@@ -33,12 +36,12 @@ object Twitter extends Controller {
       TWITTER.retrieveAccessToken(tokenPair, verifier) match {
         case Right(t) => {
           // We received the unauthorized tokens in the OAuth object - store it before we proceed
-          Redirect(routes.Application.index()).withSession("token" -> t.token, "secret" -> t.secret)
+          Redirect(routes.Profiles.index()).withSession("token" -> t.token, "secret" -> t.secret)
         }
         case Left(e) => throw e
       }
     }.getOrElse(
-      TWITTER.retrieveRequestToken("http://localhost:9000/auth") match {
+      TWITTER.retrieveRequestToken(baseUrl+"auth") match {
         case Right(t) => {
           // We received the unauthorized tokens in the OAuth object - store it before we proceed
           Redirect(TWITTER.redirectUrl(t.token)).withSession("token" -> t.token, "secret" -> t.secret)

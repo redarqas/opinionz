@@ -6,6 +6,16 @@
 @main("Welcome to Play 2.0") {
 
 <iframe style="display:none" id="streaming"></iframe>
+<div class="ui secondary pointing menu">
+  <a href="@routes.Profiles.index" class="active item">
+    <i class="home icon"></i> Home
+  </a>
+  <div class="right menu">
+    <a href="@routes.Profiles.logout" class="ui item">
+      Logout
+    </a>
+  </div>
+</div>
 <div class="ui grid">
     <div class="four wide column">
         <div class="ui raised small blue segment">
@@ -23,14 +33,15 @@
             <div class="ui blue ribbon label">Twitter</div>
             <p class="ui small message">The application is limited by twitter. Each account may create only one standing connection to the public endpoints.</p>
             <div class="ui purple ribbon label">Viralheat</div>
-            <p class="ui small message">Viralheat free service returns the probability with which the system thinks the given text has the output sentiment.</p>
+            <p class="ui small message">The application is usong Viralheat free service. 
+            It returns the probability (0 to 1) with which the system thinks the given text has the output sentiment.</p>
         </div>
     </div>
     <div class="twelve wide column">
         <div class="ui blue segment">
             <div class="ui top left attached label">
                 <i class="play icon"></i>
-                Real time tracking
+                Real time tracking : @profile.expression
             </div>
             <div id="chart1" class='with-transitions'>
                 <svg></svg>

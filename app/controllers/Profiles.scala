@@ -37,8 +37,12 @@ object Profiles extends Controller {
   def index = Authenticated { implicit request =>
     Ok(views.html.profiles.form("Ask me ! ", profileFrom))
   }
+  
+  def logout = Action { request =>
+    Redirect(routes.Profiles.index).withNewSession
+  }
 
-  def search = Authenticated.async { implicit request =>
+  def track = Authenticated.async { implicit request =>
     import StreamRecorder._
     profileFrom.bindFromRequest.fold(
       //Form with validation errors case
@@ -74,7 +78,4 @@ object Profiles extends Controller {
     }
   }
   
-  def join(term: String) = WebSocket.async[JsValue] { request =>
-    ProfileWorker.join(term)
-  }
 }

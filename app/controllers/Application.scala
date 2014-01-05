@@ -11,7 +11,7 @@ import security.Secured._
 object Application extends Controller {
   //Logout from application
   def logout = Action { request =>
-    Redirect(routes.Application.index()).withNewSession
+    Redirect(routes.Profiles.index).withNewSession
   }
 
   def index = Authenticated { implicit request =>
