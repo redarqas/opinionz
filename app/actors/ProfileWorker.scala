@@ -3,13 +3,14 @@ package actors
 import play.api._
 import play.api.libs.iteratee._
 import play.Logger
-
 import akka.actor._
 import akka.actor.Actor._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.Play.current
 import play.libs.Akka
 import models.{ Tweet, Opinion }
+import scala.concurrent.Future
+import play.api.libs.json.JsValue
 
 class ProfileWorker extends Actor {
 
@@ -34,4 +35,7 @@ object ProfileWorker {
   case class NewTweets(term: String, o: Tweet*)
   case class TweetStream(out: Enumerator[Tweet])
   lazy val ref = Akka.system.actorOf(Props[ProfileWorker])
+  
+  def join(term: String) : Future[(Iteratee[JsValue, _], Enumerator[JsValue])] = ???
+  
 }

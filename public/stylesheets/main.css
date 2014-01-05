@@ -7,7 +7,7 @@ body {
   min-width: 320px;
 }
 
-.ui.one.column.page.grid {
+#login.ui.one.column.page.grid {
   padding-top: 10rem;
   padding-bottom: 3.5rem;
   padding-right:25rem;

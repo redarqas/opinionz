@@ -4,19 +4,41 @@
 
 
 @main("Welcome to Play 2.0") {
-<div id="header"> 
-    <img class="logo" src="@routes.Assets.at("images/opinionz.png")"></img>
-</div>
-<div id="content">      
-  <iframe style="display:none" id="streaming"></iframe>
 
-  
-<div id="chart1" class='with-transitions'>
-    <svg></svg>
+<iframe style="display:none" id="streaming"></iframe>
+<div class="ui grid">
+    <div class="four wide column">
+        <div class="ui raised small blue segment">
+            <div class="ui teal ribbon label">Opinion</div>
+            <div class="ui small divided selection list message">
+                <a class="item">
+                    <div class="ui horizontal label" style="background-color: blue!important;"></div>
+                    positive
+                </a>
+                <a class="item">
+                    <div class="ui red horizontal label"></div>
+                    negative
+                </a>
+            </div>
+            <div class="ui blue ribbon label">Twitter</div>
+            <p class="ui small message">The application is limited by twitter. Each account may create only one standing connection to the public endpoints.</p>
+            <div class="ui purple ribbon label">Viralheat</div>
+            <p class="ui small message">Viralheat free service returns the probability with which the system thinks the given text has the output sentiment.</p>
+        </div>
+    </div>
+    <div class="twelve wide column">
+        <div class="ui blue segment">
+            <div class="ui top left attached label">
+                <i class="play icon"></i>
+                Real time tracking
+            </div>
+            <div id="chart1" class='with-transitions'>
+                <svg></svg>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div id="holder"></div>
-</div>
 
 <script src="@routes.Assets.at("javascripts/stream.js")"></script>
 

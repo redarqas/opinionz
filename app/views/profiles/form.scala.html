@@ -3,7 +3,7 @@
 @import helper._
 
 @main("Twitter opinion visualizer") {
-<div class="ui one column page grid">
+<div id="login" class="ui one column page grid">
  <div class="column">
  <div class="ui form segment @if(opinionForm.hasErrors || opinionForm.hasGlobalErrors) {error} ">
   <form action="@routes.Profiles.search.url" method="@routes.Profiles.search.method">
