@@ -15,3 +15,5 @@ tmp
 /.target/
 
 /bin/
+
+/conf/prod.conf
